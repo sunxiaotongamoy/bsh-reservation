@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berkeley Summit House — Reservations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --mint:      #C5F7F2;
+  --mint-dark: #8EEAE3;
+  --mint-deep: #2A7A74;
+  --navy:      #1A3A3A;
+  --navy-mid:  #254E4E;
+  --sky-text:  #7EDDD6;
+  --cream:     #FAF8F5;
+  --border:    rgba(0,0,0,0.09);
+  --border-md: rgba(0,0,0,0.14);
+  --text:      #1C1C1C;
+  --text-2:    #5A6572;
+  --text-3:    #94A0AB;
+  --white:     #FFFFFF;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; line-height: 1.6; }
+.page-wrap { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Topbar */
+.topbar { background: var(--navy); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 0 rgba(197,247,242,0.12); }
+.topbar-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+.topbar-logo-mark { width: 28px; height: 28px; background: var(--mint); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--navy); }
+.topbar-nav { display: flex; gap: 4px; align-items: center; }
+.nav-btn { padding: 7px 14px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; border: none; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: rgba(255,255,255,0.6); transition: all .15s; display: flex; align-items: center; gap: 6px; }
+.nav-btn i { font-size: 15px; }
+.nav-btn:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+.nav-btn.active { background: rgba(197,247,242,0.15); color: var(--mint); }
+.manager-chip { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 8px; background: rgba(197,247,242,0.1); border: 0.5px solid rgba(197,247,242,0.2); border-radius: 20px; font-size: 12px; color: var(--mint); margin-left: 6px; }
+.manager-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint-dark); flex-shrink: 0; }
+.chip-email { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-logout { background: none; border: none; cursor: pointer; color: rgba(197,247,242,0.45); font-size: 15px; padding: 0; display: flex; align-items: center; transition: color .15s; margin-left: 2px; }
+.chip-logout:hover { color: var(--mint); }
+.mgr-login-btn { padding: 6px 14px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; background: transparent; border: 0.5px solid rgba(197,247,242,0.25); border-radius: var(--radius-sm); color: rgba(197,247,242,0.6); cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+.mgr-login-btn i { font-size: 14px; }
+.mgr-login-btn:hover { border-color: rgba(197,247,242,0.5); color: var(--mint); }
+
+/* Main */
+main { flex: 1; padding: 2.5rem 1.25rem; }
+.container { max-width: 640px; margin: 0 auto; }
+.container-wide { max-width: 900px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Login Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 400px; margin: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalIn .2s ease; }
+@keyframes modalIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--text); }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 20px; padding: 0; display: flex; transition: color .15s; }
+.modal-close:hover { color: var(--text); }
+.modal-sub { font-size: 13px; color: var(--text-2); line-height: 1.55; margin-bottom: 1.25rem; }
+.modal-err { display: none; font-size: 13px; color: #9B2020; background: #FAEAEA; border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 1rem; align-items: center; gap: 7px; }
+.modal-err.show { display: flex; }
+.modal-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1rem; }
+.modal-field label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.modal-field input { font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 13px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); outline: none; transition: border-color .15s, box-shadow .15s; width: 100%; }
+.modal-field input:focus { border-color: var(--mint-deep); box-shadow: 0 0 0 3px rgba(42,122,116,0.1); }
+.modal-btn { width: 100%; padding: 12px; background: var(--navy); color: var(--mint); border: none; border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background .15s; }
+.modal-btn:hover { background: var(--navy-mid); }
+.modal-hint { font-size: 11px; color: var(--text-3); text-align: center; margin-top: .75rem; line-height: 1.5; }
+
+/* Hero */
+.hero { background: var(--navy); border-radius: var(--radius-lg); padding: 2.5rem 2.25rem 2.25rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+.hero::before { content:''; position:absolute; right:-50px; top:-50px; width:200px; height:200px; border-radius:50%; background:rgba(197,247,242,0.07); }
+.hero::after { content:''; position:absolute; left:30px; bottom:-60px; width:140px; height:140px; border-radius:50%; background:rgba(197,247,242,0.04); }
+.hero-eyebrow { font-size: 11px; letter-spacing: .13em; text-transform: uppercase; color: var(--sky-text); margin-bottom: .65rem; }
+.hero h1 { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 500; color: var(--white); line-height: 1.2; margin-bottom: .6rem; }
+.hero p { color: #9ABFBD; font-size: 14px; line-height: 1.65; max-width: 440px; }
+
+/* Cards */
+.card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); }
+.card-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--mint-deep); margin-bottom: 1.1rem; display: flex; align-items: center; gap: 7px; }
+.card-title i { font-size: 14px; }
+.optional { font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-3); margin-left: 4px; }
+
+/* Form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.full { grid-template-columns: 1fr; margin-bottom: 0; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.req { color: #E05A5A; margin-left: 2px; }
+input[type=text], input[type=email], input[type=tel], input[type=date], select, textarea { font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 13px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--white); color: var(--text); outline: none; transition: border-color .15s, box-shadow .15s; width: 100%; -webkit-appearance: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--mint-deep); box-shadow: 0 0 0 3px rgba(42,122,116,0.1); }
+textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235A6572' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.btn-primary { width: 100%; padding: 14px; background: var(--navy); color: var(--mint); border: none; border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s; margin-top: .75rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-secondary { padding: 10px 22px; background: transparent; color: var(--text-2); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-secondary:hover { color: var(--text); background: rgba(0,0,0,0.03); }
+
+/* Submitted */
+#form-section.hidden { display: none; }
+#submitted-page { display: none; }
+#submitted-page.show { display: block; }
+.sub-wrap { text-align: center; padding: 1rem 0 2rem; }
+.sub-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--mint); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 32px; color: var(--navy); }
+.sub-wrap h2 { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--text); margin-bottom: .5rem; }
+.sub-wrap .sub-lead { font-size: 14px; color: var(--text-2); line-height: 1.65; max-width: 400px; margin: 0 auto 2rem; }
+.wn-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: left; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
+.wn-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--mint-deep); margin-bottom: 1.1rem; }
+.wn-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.07); }
+.wn-row:first-of-type { padding-top: 0; }
+.wn-row:last-child { border-bottom: none; padding-bottom: 0; }
+.wn-num { width: 28px; height: 28px; border-radius: 50%; background: var(--mint); color: var(--navy); font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.wn-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+.wn-text strong { font-weight: 500; }
+
+/* Dashboard */
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 1.5rem; }
+.stat-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.stat-card.accent { border-top: 2px solid var(--mint-dark); }
+.stat-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; }
+.stat-val { font-size: 30px; font-weight: 500; color: var(--text); line-height: 1; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.filter-pill { padding: 6px 16px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; border: 0.5px solid var(--border-md); border-radius: 20px; background: var(--white); color: var(--text-2); cursor: pointer; transition: all .15s; }
+.filter-pill.active { background: var(--navy); color: var(--mint); border-color: var(--navy); }
+.filter-pill:hover:not(.active) { background: rgba(0,0,0,0.04); }
+.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.badge.pending  { background: var(--mint); color: #1A4542; }
+.badge.approved { background: #DCF0DC; color: #2B6B2B; }
+.badge.denied   { background: #FAEAEA; color: #9B2020; }
+.req-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.4rem; margin-bottom: 10px; box-shadow: var(--shadow-sm); transition: box-shadow .15s; }
+.req-card:hover { box-shadow: var(--shadow-md); }
+.req-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: .85rem; }
+.req-name { font-size: 15px; font-weight: 500; color: var(--text); }
+.req-meta { font-size: 12px; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+.req-dates { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text); margin-bottom: .6rem; flex-wrap: wrap; }
+.req-dates i { font-size: 14px; color: var(--mint-deep); }
+.muted { font-size: 12px; color: var(--text-3); }
+.req-body { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: .85rem; }
+.req-event { color: var(--mint-deep); font-weight: 500; }
+.req-actions { display: flex; gap: 8px; align-items: center; }
+.btn-approve { padding: 8px 18px; background: var(--navy); color: var(--mint); border: none; border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: background .15s; }
+.btn-approve:hover { background: var(--navy-mid); }
+.btn-deny { padding: 8px 18px; background: transparent; color: var(--text-2); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all .15s; }
+.btn-deny:hover { color: #C0392B; border-color: #E0A0A0; }
+.action-done { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.action-done.approved { color: #2B6B2B; }
+.action-done.denied   { color: #9B2020; }
+.empty { text-align: center; padding: 4rem 1rem; color: var(--text-3); }
+.empty i { font-size: 36px; margin-bottom: 1rem; display: block; }
+
+/* Calendar */
+.cal-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.cal-nav { display: flex; align-items: center; gap: 10px; }
+.cal-nav-btn { width: 34px; height: 34px; background: var(--white); border: 0.5px solid var(--border-md); border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 17px; transition: all .15s; }
+.cal-nav-btn:hover { border-color: var(--mint-deep); color: var(--mint-deep); }
+.cal-month-label { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--text); min-width: 180px; text-align: center; }
+.cal-wrap { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.cal-hdr { font-size: 11px; font-weight: 500; color: var(--text-3); text-align: center; padding: 6px 0; text-transform: uppercase; letter-spacing: .05em; }
+.cal-cell { min-height: 58px; padding: 5px 6px; border-radius: var(--radius-sm); background: transparent; border: 0.5px solid transparent; }
+.cal-cell.occupied { background: var(--mint); border-color: var(--mint-dark); }
+.cal-cell.today { border-color: var(--mint-deep); }
+.cal-cell.today .cal-date { color: var(--navy); font-weight: 500; }
+.cal-date { font-size: 12px; color: var(--text-3); margin-bottom: 3px; }
+.cal-cell.occupied .cal-date { color: #1A4542; }
+.cal-name { font-size: 10px; font-weight: 500; background: var(--navy); color: var(--mint); border-radius: 3px; padding: 1px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
+.cal-legend { display: flex; gap: 18px; font-size: 12px; color: var(--text-2); padding: .75rem 0 .25rem; flex-wrap: wrap; }
+.cal-legend span { display: flex; align-items: center; gap: 6px; }
+.l-dot { width: 12px; height: 12px; border-radius: 3px; }
+.upcoming-sec { margin-top: 1.5rem; }
+.upcoming-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--mint-deep); margin-bottom: 10px; }
+.up-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.07); }
+.up-row:last-child { border-bottom: none; }
+.up-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.up-sub  { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+.up-dates { text-align: right; font-size: 13px; color: var(--text); }
+.up-nights { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+/* Footer */
+footer { background: var(--navy); padding: 1.25rem 2rem; text-align: center; font-size: 12px; color: rgba(197,247,242,0.5); }
+footer a { color: rgba(197,247,242,0.7); text-decoration: none; }
+footer a:hover { color: var(--mint); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 600px) {
+  .topbar { padding: 0 1rem; }
+  .nav-btn span { display: none; }
+  .chip-email { display: none; }
+  main { padding: 1.5rem 1rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .hero h1 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="topbar">
+    <a class="topbar-logo" href="#">
+      <div class="topbar-logo-mark"><i class="ti ti-home-2"></i></div>
+      Berkeley Summit House
+    </a>
+    <nav class="topbar-nav" id="topbar-nav"></nav>
+  </header>
+
+  <main>
+
+    <!-- ── Request a Stay ──────────────────────────────────────────────────── -->
+    <section class="section active" id="section-request">
+      <div class="container">
+        <div id="form-section">
+          <div class="hero">
+            <div class="hero-eyebrow">Berkeley Summit House · 1524 Summit Road, Berkeley CA</div>
+            <h1>Request a Stay</h1>
+            <p>Fill out the form below. All requests are reviewed within 48 hours — you'll hear back by email or text once a decision is made.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-user"></i> About you</div>
+            <div class="form-row">
+              <div class="form-group"><label>Full name <span class="req">*</span></label><input type="text" id="f-name" placeholder="Jane Smith"></div>
+              <div class="form-group"><label>Email <span class="req">*</span></label><input type="email" id="f-email" placeholder="jane@example.com"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Phone number</label><input type="tel" id="f-phone" placeholder="+1 415 000 0000"></div>
+              <div class="form-group"><label>Organization / School / Studio <span class="req">*</span></label><input type="text" id="f-org" placeholder="e.g. Acme Inc, UC Berkeley, Independent"></div>
+            </div>
+            <div class="form-row full">
+              <div class="form-group">
+                <label>Role <span class="req">*</span></label>
+                <select id="f-role">
+                  <option value="">Select your role...</option>
+                  <optgroup label="Founder / Builder"><option>Founder / Co-founder</option><option>CEO / CTO / COO</option><option>Early employee (startup)</option></optgroup>
+                  <optgroup label="Investor / Advisor"><option>Venture Capitalist / Angel Investor</option><option>Advisor / Mentor</option><option>Fund Manager</option></optgroup>
+                  <optgroup label="Professional"><option>Designer / Creative</option><option>Engineer / Developer</option><option>Consultant / Freelancer</option><option>Researcher / Scientist</option><option>Operator / Manager</option></optgroup>
+                  <optgroup label="Academic"><option>Student (Undergraduate)</option><option>Student (Graduate / PhD)</option><option>Professor / Academic</option></optgroup>
+                  <optgroup label="Other"><option>Artist / Creator</option><option>Other</option></optgroup>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-calendar"></i> Stay details</div>
+            <div class="form-row">
+              <div class="form-group"><label>Check-in <span class="req">*</span></label><input type="date" id="f-checkin"></div>
+              <div class="form-group"><label>Check-out <span class="req">*</span></label><input type="date" id="f-checkout"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Number of guests <span class="req">*</span></label><select id="f-guests"><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select></div>
+              <div class="form-group"><label>Type of stay <span class="req">*</span></label><select id="f-type"><option value="">Select...</option><option>Personal / Rest</option><option>Focused work / Deep work</option><option>Team offsite</option><option>Workshop / Event</option><option>Other</option></select></div>
+            </div>
+            <div class="form-row full">
+              <div class="form-group"><label>Purpose of visit <span class="req">*</span></label><textarea id="f-purpose" placeholder="Tell us briefly what you'll be working on or why you'd like to stay at BSH."></textarea></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-sparkles"></i> Hosting an event? <span class="optional">optional</span></div>
+            <div class="form-row full">
+              <div class="form-group"><label>Event details</label><textarea id="f-event" placeholder="Describe any workshops, group lunches, dinners, or gatherings — including expected number of attendees." style="min-height:72px"></textarea></div>
+            </div>
+          </div>
+
+          <p style="font-size:12px;color:#94A0AB;margin-bottom:.5rem;padding:0 2px">Fields marked <span style="color:#E05A5A">*</span> are required.</p>
+          <button class="btn-primary" onclick="submitRequest()"><i class="ti ti-send"></i> Submit Reservation Request</button>
+        </div>
+
+        <!-- Post-submit page -->
+        <div id="submitted-page">
+          <div class="sub-wrap">
+            <div class="sub-icon"><i class="ti ti-circle-check"></i></div>
+            <h2>Request submitted!</h2>
+            <p class="sub-lead">Thank you — your request has been received and is under review. Here's what happens next:</p>
+            <div class="wn-card">
+              <div class="wn-title">What to expect</div>
+              <div class="wn-row"><div class="wn-num">1</div><div class="wn-text"><strong>Review within 48 hours.</strong> The house manager will review your request and respond promptly.</div></div>
+              <div class="wn-row"><div class="wn-num">2</div><div class="wn-text"><strong>Confirmation by email or text.</strong> You'll receive a message at the email and phone number you provided.</div></div>
+              <div class="wn-row"><div class="wn-num">3</div><div class="wn-text"><strong>Everything you need, delivered.</strong> Your confirmation will include your <strong>door code</strong>, <strong>WiFi name and password</strong>, and a link to the <strong>house handbook</strong> — no need to ask for anything separately.</div></div>
+              <div class="wn-row"><div class="wn-num">4</div><div class="wn-text"><strong>Arrive and settle in.</strong> Use your door code to access the house. The space will be freshly cleaned and ready for you.</div></div>
+            </div>
+            <button class="btn-secondary" onclick="resetForm()"><i class="ti ti-arrow-left"></i> Submit another request</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Manager Dashboard ──────────────────────────────────────────────── -->
+    <section class="section" id="section-dashboard">
+      <div class="container-wide">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500">Manager Dashboard</h2>
+          <p style="font-size:13px;color:var(--text-2);margin-top:4px">Review and approve reservation requests</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card accent"><div class="stat-label">Pending review</div><div class="stat-val" id="stat-pending">0</div></div>
+          <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-val" id="stat-approved">0</div></div>
+          <div class="stat-card"><div class="stat-label">Total requests</div><div class="stat-val" id="stat-total">0</div></div>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-pill active" onclick="filterReqs('all',this)">All</button>
+          <button class="filter-pill" onclick="filterReqs('pending',this)">Pending</button>
+          <button class="filter-pill" onclick="filterReqs('approved',this)">Approved</button>
+          <button class="filter-pill" onclick="filterReqs('denied',this)">Denied</button>
+        </div>
+        <div id="req-list"></div>
+      </div>
+    </section>
+
+    <!-- ── Calendar ───────────────────────────────────────────────────────── -->
+    <section class="section" id="section-calendar">
+      <div class="container-wide">
+        <div class="cal-toolbar">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+            <div class="cal-month-label" id="cal-label"></div>
+            <button class="cal-nav-btn" onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="cal-wrap">
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-legend">
+            <span><div class="l-dot" style="background:var(--mint);border:1px solid var(--mint-dark)"></div> Guest staying</span>
+            <span><div class="l-dot" style="background:transparent;border:1.5px solid var(--mint-deep)"></div> Today</span>
+          </div>
+        </div>
+        <div class="upcoming-sec" id="upcoming-sec"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Berkeley Summit House &nbsp;·&nbsp; 1524 Summit Road, Berkeley CA 94708 &nbsp;·&nbsp;
+      <a href="mailto:sunxiaotongamoy@gmail.com">sunxiaotongamoy@gmail.com</a> &nbsp;·&nbsp;
+      <a href="https://www.berkeleysummithouse.org" target="_blank">berkeleysummithouse.org</a>
+    </p>
+  </footer>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Manager Sign In</div>
+      <button class="modal-close" onclick="closeLogin()"><i class="ti ti-x"></i></button>
+    </div>
+    <p class="modal-sub">Enter your manager email to access the dashboard and calendar.</p>
+    <div class="modal-err" id="login-err"><i class="ti ti-alert-circle"></i><span>That email isn't recognized as a manager account.</span></div>
+    <div class="modal-field">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="modal-btn" onclick="doLogin()">Sign In</button>
+    <p class="modal-hint">Access is limited to approved managers.<br>Contact the house admin if you need access.</p>
+  </div>
+</div>
+
+<script>
+// ── CONFIG — update BACKEND_URL after deploying Google Apps Script ───────────
+const MANAGERS    = ['sunxiaotongamoy@gmail.com', 'serena@bshfoundation.org'];
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbz0wkd7Hcq0Vx4XkYM4IKVpd0FDpr637WulI2Ev0S910-La9rmDm2SeXvQNlxiCkJvR/exec';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentManager = sessionStorage.getItem('bsh_mgr') || null;
+let activeFilter   = 'all';
+let calDate        = new Date();
+let requests       = [];
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+async function api(payload) {
+  const form = new FormData();
+  form.append('payload', JSON.stringify(payload));
+  const res = await fetch(BACKEND_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'text/plain' },
+  });
+  return res.json();
+}
+
+async function loadRequests() {
+  try {
+    const data = await api({ action: 'load' });
+    if (data.ok) requests = data.requests;
+  } catch (e) {
+    console.error('Could not load requests:', e);
+  }
+}
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function openLogin() {
+  document.getElementById('login-modal').classList.add('show');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-err').classList.remove('show');
+  setTimeout(() => document.getElementById('login-email').focus(), 120);
+}
+function closeLogin() { document.getElementById('login-modal').classList.remove('show'); }
+document.getElementById('login-modal').addEventListener('click', e => { if (e.target === document.getElementById('login-modal')) closeLogin(); });
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  if (MANAGERS.map(e => e.toLowerCase()).includes(email)) {
+    currentManager = email;
+    sessionStorage.setItem('bsh_mgr', email);
+    closeLogin();
+    renderNav();
+    showSection('dashboard');
+  } else {
+    document.getElementById('login-err').classList.add('show');
+    document.getElementById('login-email').select();
+  }
+}
+
+function logout() {
+  currentManager = null;
+  sessionStorage.removeItem('bsh_mgr');
+  renderNav();
+  showSection('request');
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('topbar-nav');
+  if (currentManager) {
+    nav.innerHTML = `
+      <button class="nav-btn" id="nav-request" onclick="showSection('request')"><i class="ti ti-calendar-plus"></i><span>Request a Stay</span></button>
+      <button class="nav-btn" id="nav-dashboard" onclick="showSection('dashboard')"><i class="ti ti-layout-dashboard"></i><span>Manager</span></button>
+      <button class="nav-btn" id="nav-calendar" onclick="showSection('calendar')"><i class="ti ti-calendar"></i><span>Calendar</span></button>
+      <div class="manager-chip">
+        <div class="manager-chip-dot"></div>
+        <span class="chip-email">${currentManager}</span>
+        <button class="chip-logout" onclick="logout()" title="Sign out"><i class="ti ti-logout"></i></button>
+      </div>`;
+  } else {
+    nav.innerHTML = `<button class="mgr-login-btn" onclick="openLogin()"><i class="ti ti-lock"></i><span>Manager login</span></button>`;
+  }
+  highlightNav();
+}
+
+function highlightNav() {
+  const active = document.querySelector('.section.active');
+  if (!active) return;
+  const id = active.id.replace('section-', '');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nav-' + id);
+  if (btn) btn.classList.add('active');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showSection(name) {
+  if ((name === 'dashboard' || name === 'calendar') && !currentManager) { openLogin(); return; }
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  highlightNav();
+  if (name === 'dashboard') loadRequests().then(renderDashboard);
+  if (name === 'calendar')  loadRequests().then(renderCalendar);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+async function submitRequest() {
+  const v = {
+    name: document.getElementById('f-name').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    org: document.getElementById('f-org').value.trim(),
+    role: document.getElementById('f-role').value,
+    checkin: document.getElementById('f-checkin').value,
+    checkout: document.getElementById('f-checkout').value,
+    guests: document.getElementById('f-guests').value,
+    type: document.getElementById('f-type').value,
+    purpose: document.getElementById('f-purpose').value.trim(),
+    event: document.getElementById('f-event').value.trim(),
+  };
+  if (!v.name||!v.email||!v.org||!v.role||!v.checkin||!v.checkout||!v.type||!v.purpose) { alert('Please fill in all required fields.'); return; }
+  if (v.checkout <= v.checkin) { alert('Check-out must be after check-in.'); return; }
+
+  // Show loading state
+  const btn = document.querySelector('.btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Sending...';
+
+  try {
+    const res = await api({ action: 'submit', ...v });
+    if (!res.ok) throw new Error(res.error);
+    document.getElementById('form-section').classList.add('hidden');
+    document.getElementById('submitted-page').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    alert('Something went wrong: ' + e.message + '\nPlease try again or email us directly.');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send"></i> Submit Reservation Request';
+  }
+}
+
+function resetForm() {
+  ['f-name','f-email','f-phone','f-org','f-purpose','f-event'].forEach(id => document.getElementById(id).value = '');
+  ['f-role','f-type'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-guests').value = '1';
+  document.getElementById('f-checkin').value = '';
+  document.getElementById('f-checkout').value = '';
+  document.getElementById('submitted-page').classList.remove('show');
+  document.getElementById('form-section').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function cleanDate(d) {
+  // Handles both "2026-05-22T04:00:00.000Z" and "2026-05-22"
+  if (!d) return '';
+  const date = new Date(d);
+  if (isNaN(date)) return d; // fallback: return as-is
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function fmtDate(d) {
+  const clean = cleanDate(d);
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p = clean.split('-');
+  return `${mo[parseInt(p[1])-1]} ${parseInt(p[2])}, ${p[0]}`;
+}
+function nights(a, b) { return Math.max(0, Math.round((new Date(cleanDate(b)) - new Date(cleanDate(a))) / 864e5)); }
+function normStatus(s) { return (s || '').trim().toLowerCase(); }
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function approveReq(rowId) {
+  const btn = document.querySelector(`[data-id="${rowId}"] .btn-approve`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Approving...'; }
+  const res = await api({ action: 'approve', rowId });
+  if (res.ok) { await loadRequests(); renderDashboard(); }
+  else alert('Error: ' + res.error);
+}
+
+async function denyReq(rowId) {
+  if (!confirm('Deny this request and notify the guest?')) return;
+  const res = await api({ action: 'deny', rowId });
+  if (res.ok) { await loadRequests(); renderDashboard(); }
+  else alert('Error: ' + res.error);
+}
+
+function filterReqs(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+}
+
+function renderDashboard() {
+  document.getElementById('stat-pending').textContent  = requests.filter(r=>normStatus(r.status)==='pending').length;
+  document.getElementById('stat-approved').textContent = requests.filter(r=>normStatus(r.status)==='approved').length;
+  document.getElementById('stat-total').textContent    = requests.length;
+  const filtered = activeFilter==='all' ? requests : requests.filter(r=>normStatus(r.status)===activeFilter);
+  const list = document.getElementById('req-list');
+  if (!filtered.length) { list.innerHTML=`<div class="empty"><i class="ti ti-inbox"></i><p>No ${activeFilter==='all'?'':activeFilter} requests yet</p></div>`; return; }
+  list.innerHTML = filtered.map(r=>`
+    <div class="req-card" data-id="${r.rowId}">
+      <div class="req-top">
+        <div style="flex:1;min-width:0">
+          <div class="req-name">${r.name}</div>
+          <div class="req-meta">${r.role} &nbsp;·&nbsp; ${r.org}</div>
+          <div class="req-meta">${r.email}${r.phone?' &nbsp;·&nbsp; '+r.phone:''}</div>
+          <div class="req-meta" style="color:var(--text-3)">Submitted ${fmtDate(r.submitted)}</div>
+        </div>
+        <span class="badge ${normStatus(r.status)}">${r.status}</span>
+      </div>
+      <div class="req-dates"><i class="ti ti-calendar"></i>${fmtDate(r.checkin)} &rarr; ${fmtDate(r.checkout)}<span class="muted">${nights(r.checkin,r.checkout)} night${nights(r.checkin,r.checkout)!==1?'s':''} &nbsp;·&nbsp; ${r.guests} guest${r.guests!=='1'?'s':''} &nbsp;·&nbsp; ${r.type}</span></div>
+      <div class="req-body">${r.purpose}${r.event?`<br><span class="req-event">Event: </span>${r.event}`:''}</div>
+      <div class="req-actions">
+        ${normStatus(r.status)==='pending'
+          ?`<button class="btn-approve" onclick="approveReq('${r.rowId}')"><i class="ti ti-check"></i> Approve</button><button class="btn-deny" onclick="denyReq('${r.rowId}')">Deny</button>`
+          :`<div class="action-done ${normStatus(r.status)}"><i class="ti ti-${normStatus(r.status)==='approved'?'circle-check':'circle-x'}"></i>${normStatus(r.status)==='approved'?'Approved — confirmation sent to guest':'Denied'}</div>`}
+      </div>
+    </div>`).join('');
+}
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+function changeMonth(dir) { calDate=new Date(calDate.getFullYear(),calDate.getMonth()+dir,1); renderCalendar(); }
+
+function renderCalendar() {
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-label').textContent=`${MONTHS[m]} ${y}`;
+  const today=new Date(), firstDay=new Date(y,m,1).getDay(), dim=new Date(y,m+1,0).getDate();
+  const approved=requests.filter(r=>normStatus(r.status)==='approved');
+  function guestOn(d) { const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; for(const r of approved){if(ds>=cleanDate(r.checkin)&&ds<cleanDate(r.checkout))return r.name.split(' ')[0];} return null; }
+  let html=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html+=`<div></div>`;
+  for(let d=1;d<=dim;d++) {
+    const g=guestOn(d), isT=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    html+=`<div class="cal-cell${g?' occupied':''}${isT?' today':''}"><div class="cal-date">${d}</div>${g?`<span class="cal-name">${g}</span>`:''}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  const upcoming=approved.filter(r=>new Date(cleanDate(r.checkin))<=new Date(y,m+1,0)&&new Date(cleanDate(r.checkout))>=new Date(y,m,1)).sort((a,b)=>cleanDate(a.checkin).localeCompare(cleanDate(b.checkin)));
+  const upEl=document.getElementById('upcoming-sec');
+  if(!upcoming.length){upEl.innerHTML='';return;}
+  upEl.innerHTML=`<div class="upcoming-title">Guests this month</div>`+upcoming.map(r=>`
+    <div class="up-row">
+      <div><div class="up-name">${r.name}</div><div class="up-sub">${r.role} &nbsp;·&nbsp; ${r.org}</div></div>
+      <div><div class="up-dates">${fmtDate(r.checkin)} &rarr; ${fmtDate(r.checkout)}</div><div class="up-nights">${nights(r.checkin,r.checkout)} night${nights(r.checkin,r.checkout)!==1?'s':''} &nbsp;·&nbsp; ${r.guests} guest${r.guests!=='1'?'s':''}</div></div>
+    </div>`).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderNav();
+calDate = new Date();
+renderCalendar();
+// Load real data when manager logs in
+if (currentManager) loadRequests().then(() => { renderDashboard(); renderCalendar(); });
+</script>
+</body>
+</html>
